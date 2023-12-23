@@ -1,2 +1,28 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import requests
+link = "https://habr.com/ru/articles/top/weekly/"
+response = requests.get(link)
+html_code = response.text
+start_tag = "<h2"
+end_tag = "</h2>"
+start_index = html_code.find(start_tag)
+end_index = html_code.find(end_tag, start_index) + len(end_tag)
+headers = []
+while start_index != -1 and end_index != -1:
+headers.append(html_code[start_index:end_index])
+start_index = html_code.find(start_tag, end_index)
+end_index = html_code.find(end_tag, start_index) + len(end_tag)
+for header in headers:
+start_tag = "<a href='"
+end_tag = "'"
+start_index = header.find(start_tag) + len(start_tag)
+end_index = header.find(end_tag, start_index)
+article_link = header[start_index:end_index]
+article_response = requests.get(article_link)
+article_html_code = article_response.text
+start_tag = "articles/"
+end_tag = "/"
+start_index = article_link.find(start_tag) + len(start_tag)
+end_index = article_link.find(end_tag, start_index)
+article_number = article_link[start_index:end_index]
+with open(f"{article_number}.html", 'w', encoding='utf-8') as file:
+file.write(article_html_code)
